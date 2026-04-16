@@ -379,8 +379,8 @@ footer strong{color:var(--paper)}
         <button class="btn-green" onclick="mostrarModal()">Acessar Curso Online →</button>
 
 <!-- MODAL MEDUSA PAY PIX -->
-<div id="modalCobranca" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,14,18,.78);z-index:9998;overflow-y:auto">
-  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:calc(100% - 40px);box-shadow:0 24px 80px rgba(0,0,0,.35);margin:40px auto;position:relative;">
+<div id="modalCobranca" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,14,18,.78);z-index:9998;overflow-y:auto;display:none">
+  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35);position:relative;flex-shrink:0;">
 
     <!-- HEADER -->
     <div style="padding:24px 28px 18px;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between">
@@ -626,8 +626,7 @@ function mostrarModal(){
   var resumo=document.getElementById('resumoCurso');
   if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
   var m=document.getElementById('modalCobranca');
-  m.style.display='block';
-  m.scrollTop=0;
+  m.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,14,18,.78);z-index:9998;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;box-sizing:border-box;';
   document.body.style.overflow='hidden';
   gerarPix();
 }
@@ -648,16 +647,18 @@ function gerarPix(){
     document.getElementById('pixLoading').style.display='none';
     if(data.sucesso){
       var copiaCola=data.copia_cola||'';
-      // Gera QR Code localmente com qrcodejs
-      var qrDiv=document.getElementById('pixQrCode');
-      qrDiv.innerHTML='';
-      if(copiaCola && typeof QRCode !== 'undefined'){
-        new QRCode(qrDiv,{text:copiaCola,width:172,height:172,correctLevel:QRCode.CorrectLevel.M});
-      } else if(copiaCola){
-        qrDiv.innerHTML='<div style="font-size:10px;color:#999;text-align:center;padding:60px 10px">QR Code<br>indisponível</div>';
-      }
-      document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave não disponível)';
+      document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave nao disponivel)';
       document.getElementById('pixContent').style.display='block';
+      setTimeout(function(){
+        var qrDiv=document.getElementById('pixQrCode');
+        if(qrDiv) qrDiv.innerHTML='';
+        if(copiaCola && qrDiv){
+          if(typeof QRCode !== 'undefined'){
+            try{ new QRCode(qrDiv,{text:copiaCola,width:170,height:170,correctLevel:QRCode.CorrectLevel.M}); }
+            catch(e){ qrDiv.textContent='QR indisponivel'; }
+          }
+        }
+      },150);
     }else{
       document.getElementById('pixErroMsg').textContent=data.erro||'Erro ao gerar PIX';
       document.getElementById('pixErro').style.display='block';
@@ -671,7 +672,8 @@ function gerarPix(){
 }
 
 function fecharModal(){
-  document.getElementById('modalCobranca').style.display='none';
+  var m=document.getElementById('modalCobranca');
+  m.style.display='none';
   document.body.style.overflow='';
 }
 function copiarChave(){
