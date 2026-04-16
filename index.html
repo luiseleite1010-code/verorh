@@ -379,8 +379,8 @@ footer strong{color:var(--paper)}
         <button class="btn-green" onclick="mostrarModal()">Acessar Curso Online →</button>
 
 <!-- MODAL MEDUSA PAY PIX -->
-<div id="modalCobranca" style="display:none;position:fixed;inset:0;background:rgba(13,14,18,.78);z-index:9998;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
-  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35);margin:auto;position:relative;max-height:90vh;overflow-y:auto">
+<div id="modalCobranca" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(13,14,18,.78);z-index:9998;overflow-y:auto">
+  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:calc(100% - 40px);box-shadow:0 24px 80px rgba(0,0,0,.35);margin:40px auto;position:relative;">
 
     <!-- HEADER -->
     <div style="padding:24px 28px 18px;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between">
@@ -414,10 +414,8 @@ footer strong{color:var(--paper)}
         <div style="text-align:center;margin-bottom:18px">
           <div style="font-size:.82rem;color:#6b6860;margin-bottom:14px;line-height:1.6">Escaneie o QR Code com o app do seu banco ou copie a chave PIX:</div>
 
-          <!-- QR CODE IMAGE -->
-          <div style="width:190px;height:190px;margin:0 auto 14px;border:1px solid rgba(13,14,18,.12);border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff;padding:8px">
-            <img id="pixQrImg" src="" alt="QR Code PIX" style="width:100%;height:100%;object-fit:contain"/>
-          </div>
+          <!-- QR CODE -->
+          <div id="pixQrCode" style="width:180px;height:180px;margin:0 auto 14px;border:1px solid rgba(13,14,18,.12);border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff;padding:4px"></div>
 
           <!-- COPIA E COLA -->
           <div style="background:#f4f1eb;border:1px solid rgba(13,14,18,.12);border-radius:4px;padding:10px 12px;display:flex;align-items:center;gap:8px;margin-bottom:12px;text-align:left">
@@ -628,9 +626,8 @@ function mostrarModal(){
   var resumo=document.getElementById('resumoCurso');
   if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
   var m=document.getElementById('modalCobranca');
-  m.style.display='flex';
-  m.style.alignItems='center';
-  m.style.justifyContent='center';
+  m.style.display='block';
+  m.scrollTop=0;
   document.body.style.overflow='hidden';
   gerarPix();
 }
@@ -650,14 +647,14 @@ function gerarPix(){
   .then(function(data){
     document.getElementById('pixLoading').style.display='none';
     if(data.sucesso){
-      var qrImg=document.getElementById('pixQrImg');
       var copiaCola=data.copia_cola||'';
-      // Gera QR Code a partir do código copia e cola
-      if(copiaCola){
-        qrImg.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(copiaCola);
-        qrImg.onerror=function(){this.style.display='none';};
-      } else if(data.qr_code){
-        qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;
+      // Gera QR Code localmente com qrcodejs
+      var qrDiv=document.getElementById('pixQrCode');
+      qrDiv.innerHTML='';
+      if(copiaCola && typeof QRCode !== 'undefined'){
+        new QRCode(qrDiv,{text:copiaCola,width:172,height:172,correctLevel:QRCode.CorrectLevel.M});
+      } else if(copiaCola){
+        qrDiv.innerHTML='<div style="font-size:10px;color:#999;text-align:center;padding:60px 10px">QR Code<br>indisponível</div>';
       }
       document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave não disponível)';
       document.getElementById('pixContent').style.display='block';
@@ -699,5 +696,6 @@ var styleEl=document.createElement('style');
 styleEl.textContent='@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
 document.head.appendChild(styleEl);
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
