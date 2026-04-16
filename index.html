@@ -379,79 +379,82 @@ footer strong{color:var(--paper)}
         <button class="btn-green" onclick="mostrarModal()">Acessar Curso Online →</button>
 
 <!-- MODAL MEDUSA PAY PIX -->
-<div id="modalCobranca" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(13,14,18,.78);z-index:9998;">
-  <div id="modalInner" style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:calc(100% - 40px);box-shadow:0 24px 80px rgba(0,0,0,.35);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-height:90vh;overflow-y:auto;">
+<div id="modalCobranca" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(13,14,18,.82);z-index:9998;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div id="modalInner" style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:440px;width:calc(100% - 24px);margin:16px auto 32px auto;box-shadow:0 16px 60px rgba(0,0,0,.4);position:relative;">
 
     <!-- HEADER -->
-    <div style="padding:24px 28px 18px;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between">
+    <div style="padding:18px 20px 14px;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:1.25rem;color:#0d0e12;margin-bottom:2px">Pagamento do Curso</div>
-        <div style="font-size:.75rem;color:#6b6860">Processado com segurança via <strong style="color:#0d0e12">Medusa Pay</strong></div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:1.1rem;color:#0d0e12;">Pagamento do Curso</div>
+        <div style="font-size:.72rem;color:#6b6860;margin-top:2px;">Seguro via <strong style="color:#0d0e12;">Medusa Pay</strong></div>
       </div>
-      <button onclick="fecharModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b6860;padding:4px;line-height:1">✕</button>
+      <button onclick="fecharModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b6860;padding:4px;line-height:1;flex-shrink:0;">✕</button>
     </div>
 
-        <!-- RESUMO VALOR -->
-    <div style="padding:16px 28px;background:#f4f1eb;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between">
+    <!-- RESUMO -->
+    <div style="padding:12px 20px;background:#f4f1eb;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <div style="font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#6b6860;margin-bottom:2px">Curso obrigatório de ingresso</div>
-        <div id="resumoCurso" style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.95rem;color:#0d0e12">—</div>
+        <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;">Curso obrigatório</div>
+        <div id="resumoCurso" style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.9rem;color:#0d0e12;">—</div>
       </div>
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:1.6rem;color:#c8382e">R$ 49,99</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:1.5rem;color:#c8382e;flex-shrink:0;margin-left:12px;">R$ 49,99</div>
     </div>
 
-    <!-- PAINEL PIX -->
-    <div id="panelPix" style="padding:24px 28px">
+    <!-- LOADING -->
+    <div id="pixLoading" style="text-align:center;padding:40px 20px;">
+      <div style="width:40px;height:40px;border:3px solid #f4f1eb;border-top:3px solid #c8382e;border-radius:50%;margin:0 auto 12px;animation:spin 1s linear infinite;"></div>
+      <div style="font-size:.85rem;color:#6b6860;">Gerando PIX via Medusa Pay…</div>
+    </div>
 
-      <!-- ESTADO: LOADING -->
-      <div id="pixLoading" style="text-align:center;padding:24px 0">
-        <div style="width:44px;height:44px;border:3px solid #f4f1eb;border-top:3px solid #c8382e;border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite"></div>
-        <div style="font-size:.88rem;color:#6b6860">Gerando QR Code PIX via Medusa Pay…</div>
+    <!-- CONTEÚDO PIX -->
+    <div id="pixContent" style="display:none;padding:20px;">
+
+      <!-- QR CODE centralizado e grande -->
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:.78rem;color:#6b6860;margin-bottom:14px;line-height:1.5;">Escaneie com o app do seu banco:</div>
+        <div id="pixQrCode" style="display:inline-block;padding:10px;background:#fff;border:2px solid rgba(13,14,18,.12);border-radius:6px;line-height:0;"></div>
       </div>
 
-      <!-- ESTADO: QR CODE (oculto inicialmente) -->
-      <div id="pixContent" style="display:none">
-        <div style="text-align:center;margin-bottom:18px">
-          <div style="font-size:.82rem;color:#6b6860;margin-bottom:14px;line-height:1.6">Escaneie o QR Code com o app do seu banco ou copie a chave PIX:</div>
-
-          <!-- QR CODE -->
-          <div id="pixQrCode" style="width:180px;height:180px;margin:0 auto 14px;border:1px solid rgba(13,14,18,.12);border-radius:4px;display:flex;align-items:center;justify-content:center;background:#fff;padding:4px"></div>
-
-          <!-- COPIA E COLA -->
-          <div style="background:#f4f1eb;border:1px solid rgba(13,14,18,.12);border-radius:4px;padding:10px 12px;display:flex;align-items:center;gap:8px;margin-bottom:12px;text-align:left">
-            <div id="pixCopiaTexto" style="flex:1;font-size:.75rem;color:#6b6860;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace">—</div>
-            <button onclick="copiarChave()" id="btnCopiar" style="background:#0d0e12;color:#fff;border:none;padding:6px 12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.75rem;cursor:pointer;border-radius:4px;white-space:nowrap;flex-shrink:0">Copiar</button>
-          </div>
-
-          <div style="display:flex;align-items:center;gap:6px;justify-content:center;font-size:.75rem;color:#1ea86a;margin-bottom:4px">
-            <span>●</span> Confirmação instantânea após pagamento
-          </div>
-          <div style="font-size:.7rem;color:#6b6860" id="pixExpira">Válido por 24 horas</div>
-        </div>
-
-        <div style="display:flex;gap:10px;margin-top:4px">
-          <button onclick="fecharModal()" style="flex:1;background:transparent;border:1.5px solid rgba(13,14,18,.15);padding:12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.9rem;color:#6b6860;cursor:pointer;border-radius:4px">Cancelar</button>
-          <button onclick="confirmarPagamento()" style="flex:2;background:#1ea86a;color:#fff;border:none;padding:12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.9rem;cursor:pointer;border-radius:4px">Já realizei o pagamento ✓</button>
-        </div>
+      <!-- DIVISOR -->
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+        <div style="flex:1;height:1px;background:rgba(13,14,18,.1);"></div>
+        <div style="font-size:.72rem;color:#6b6860;white-space:nowrap;">ou copie o código PIX</div>
+        <div style="flex:1;height:1px;background:rgba(13,14,18,.1);"></div>
       </div>
 
-      <!-- ESTADO: ERRO -->
-      <div id="pixErro" style="display:none;text-align:center;padding:16px 0">
-        <div style="font-size:2rem;margin-bottom:10px">⚠️</div>
-        <div style="font-size:.88rem;color:#c8382e;margin-bottom:4px;font-weight:600" id="pixErroMsg">Erro ao gerar PIX</div>
-        <div style="font-size:.78rem;color:#6b6860;margin-bottom:16px">Tente novamente ou use o cartão de crédito.</div>
-        <button onclick="gerarPix()" style="background:#c8382e;color:#fff;border:none;padding:10px 24px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.88rem;cursor:pointer;border-radius:4px">Tentar novamente</button>
+      <!-- COPIA E COLA -->
+      <div style="background:#f4f1eb;border:1px solid rgba(13,14,18,.12);border-radius:6px;padding:10px 12px;margin-bottom:14px;">
+        <div id="pixCopiaTexto" style="font-size:.72rem;color:#6b6860;font-family:monospace;word-break:break-all;line-height:1.5;margin-bottom:8px;">—</div>
+        <button onclick="copiarChave()" id="btnCopiar" style="width:100%;background:#0d0e12;color:#fff;border:none;padding:9px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.88rem;cursor:pointer;border-radius:4px;">Copiar código PIX</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;justify-content:center;font-size:.75rem;color:#1ea86a;margin-bottom:16px;">
+        <span>●</span> Confirmação instantânea · Válido por 24h
+      </div>
+
+      <!-- BOTÕES -->
+      <div style="display:flex;gap:10px;">
+        <button onclick="fecharModal()" style="flex:1;background:transparent;border:1.5px solid rgba(13,14,18,.15);padding:12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.88rem;color:#6b6860;cursor:pointer;border-radius:4px;">Cancelar</button>
+        <button onclick="confirmarPagamento()" style="flex:2;background:#1ea86a;color:#fff;border:none;padding:12px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.88rem;cursor:pointer;border-radius:4px;">Já paguei ✓</button>
       </div>
     </div>
 
-        <!-- RODAPÉ -->
-    <div style="padding:12px 28px;background:#f4f1eb;border-top:1px solid rgba(13,14,18,.08);display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap">
-      <span style="font-size:.7rem;color:#6b6860">🔒 Ambiente seguro</span>
-      <span style="font-size:.7rem;color:#6b6860">🏦 Medusa Pay</span>
-      <span style="font-size:.7rem;color:#6b6860">✅ SSL 256-bit</span>
+    <!-- ERRO -->
+    <div id="pixErro" style="display:none;text-align:center;padding:32px 20px;">
+      <div style="font-size:2rem;margin-bottom:10px;">⚠️</div>
+      <div style="font-size:.88rem;color:#c8382e;margin-bottom:6px;font-weight:600;" id="pixErroMsg">Erro ao gerar PIX</div>
+      <div style="font-size:.78rem;color:#6b6860;margin-bottom:16px;">Tente novamente.</div>
+      <button onclick="gerarPix()" style="background:#c8382e;color:#fff;border:none;padding:10px 24px;font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:.88rem;cursor:pointer;border-radius:4px;">Tentar novamente</button>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div style="padding:10px 20px;background:#f4f1eb;border-top:1px solid rgba(13,14,18,.08);display:flex;align-items:center;justify-content:center;gap:16px;border-radius:0 0 4px 4px;">
+      <span style="font-size:.68rem;color:#6b6860;">🔒 Seguro</span>
+      <span style="font-size:.68rem;color:#6b6860;">🏦 Medusa Pay</span>
+      <span style="font-size:.68rem;color:#6b6860;">✅ SSL 256-bit</span>
     </div>
   </div>
-</div>
+</div></div>
 
 <footer>
   &copy; 2026 <strong>VERORH</strong> · Sistema de Gestão de Recursos Humanos · Todos os direitos reservados
@@ -627,8 +630,8 @@ function mostrarModal(){
   if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
   var m=document.getElementById('modalCobranca');
   m.style.display='block';
+  m.scrollTop=0;
   document.body.style.overflow='hidden';
-  window.scrollTo(0,0);
   gerarPix();
 }
 
@@ -649,17 +652,28 @@ function gerarPix(){
     if(data.sucesso){
       var copiaCola=data.copia_cola||'';
       document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave nao disponivel)';
+      document.getElementById('pixLoading').style.display='none';
       document.getElementById('pixContent').style.display='block';
       setTimeout(function(){
         var qrDiv=document.getElementById('pixQrCode');
-        if(qrDiv) qrDiv.innerHTML='';
-        if(copiaCola && qrDiv){
-          if(typeof QRCode !== 'undefined'){
-            try{ new QRCode(qrDiv,{text:copiaCola,width:170,height:170,correctLevel:QRCode.CorrectLevel.M}); }
-            catch(e){ qrDiv.textContent='QR indisponivel'; }
+        if(!qrDiv||!copiaCola)return;
+        qrDiv.innerHTML='';
+        if(typeof QRCode!=='undefined'){
+          try{
+            new QRCode(qrDiv,{
+              text:copiaCola,
+              width:200,
+              height:200,
+              colorDark:'#000000',
+              colorLight:'#ffffff',
+              correctLevel:QRCode.CorrectLevel.M
+            });
+          }catch(e){
+            qrDiv.style.cssText='width:200px;height:40px;display:flex;align-items:center;justify-content:center;';
+            qrDiv.textContent='QR indisponivel';
           }
         }
-      },150);
+      },200);
     }else{
       document.getElementById('pixErroMsg').textContent=data.erro||'Erro ao gerar PIX';
       document.getElementById('pixErro').style.display='block';
