@@ -379,8 +379,8 @@ footer strong{color:var(--paper)}
         <button class="btn-green" onclick="mostrarModal()">Acessar Curso Online →</button>
 
 <!-- MODAL MEDUSA PAY PIX -->
-<div id="modalCobranca" style="display:none;position:fixed;inset:0;background:rgba(13,14,18,.78);z-index:9998;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto">
-  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:500px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35);margin:auto;position:relative;animation:slideUp .3s ease both">
+<div id="modalCobranca" style="display:none;position:fixed;inset:0;background:rgba(13,14,18,.78);z-index:9998;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:#fff;border-top:4px solid #c8382e;border-radius:4px;max-width:480px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35);margin:auto;position:relative;max-height:90vh;overflow-y:auto">
 
     <!-- HEADER -->
     <div style="padding:24px 28px 18px;border-bottom:1px solid rgba(13,14,18,.1);display:flex;align-items:center;justify-content:space-between">
@@ -629,6 +629,8 @@ function mostrarModal(){
   if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
   var m=document.getElementById('modalCobranca');
   m.style.display='flex';
+  m.style.alignItems='center';
+  m.style.justifyContent='center';
   document.body.style.overflow='hidden';
   gerarPix();
 }
@@ -649,8 +651,15 @@ function gerarPix(){
     document.getElementById('pixLoading').style.display='none';
     if(data.sucesso){
       var qrImg=document.getElementById('pixQrImg');
-      if(data.qr_code){qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;}
-      document.getElementById('pixCopiaTexto').textContent=data.copia_cola||'(chave não disponível)';
+      var copiaCola=data.copia_cola||'';
+      // Gera QR Code a partir do código copia e cola
+      if(copiaCola){
+        qrImg.src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(copiaCola);
+        qrImg.onerror=function(){this.style.display='none';};
+      } else if(data.qr_code){
+        qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;
+      }
+      document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave não disponível)';
       document.getElementById('pixContent').style.display='block';
     }else{
       document.getElementById('pixErroMsg').textContent=data.erro||'Erro ao gerar PIX';
