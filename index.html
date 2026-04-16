@@ -621,95 +621,125 @@ function startTimer(){
     var el=document.getElementById('camTime');if(el)el.textContent=m+':'+s;
   },1000);
 }
+</script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+
+/* ── MODAL MEDUSA PAY ── */
 function mostrarModal(){
-  // Usa dados já salvos no submit + cargo atual
-  var cargo=document.getElementById('cargo')?document.getElementById('cargo').value:(_dadosCliente.cargo||'');
-  _dadosCliente.cargo=cargo;
-  var resumo=document.getElementById('resumoCurso');
-  if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
-  var m=document.getElementById('modalCobranca');
-  m.style.display='block';
-  m.scrollTop=0;
-  gerarPix();
+  var cargo = _dadosCliente.cargo || '';
+  var resumo = document.getElementById('resumoCurso');
+  if(resumo) resumo.textContent = cargo==='Motorista' ? 'NR 01 — Integração de Segurança' : 'Prevenção à Lavagem de Dinheiro (PLD)';
+
+  // Reset modal state
+  document.getElementById('pixLoading').style.display = 'block';
+  document.getElementById('pixContent').style.display = 'none';
+  document.getElementById('pixErro').style.display = 'none';
+  var qrDiv = document.getElementById('pixQrCode');
+  if(qrDiv) qrDiv.innerHTML = '';
+
+  // Show modal first
+  document.getElementById('modalCobranca').style.display = 'block';
+
+  // Then fetch after small delay so UI renders
+  setTimeout(gerarPix, 50);
 }
 
 function gerarPix(){
-  document.getElementById('pixLoading').style.display='block';
-  document.getElementById('pixContent').style.display='none';
-  document.getElementById('pixErro').style.display='none';
-  var params=new URLSearchParams({
-    acao:'gerar_pix',valor:'49.99',
-    nome:_dadosCliente.nome||'Candidato VeroRH',
-    email:_dadosCliente.email||'candidato@verorh.com.br',
-    cpf:(_dadosCliente.cpf||'').replace(/[^0-9]/g,'')
-  });
-  fetch(MEDUSA_API_URL+'?'+params.toString())
-  .then(function(r){return r.json();})
-  .then(function(data){
-    document.getElementById('pixLoading').style.display='none';
-    if(data.sucesso){
-      var copiaCola=data.copia_cola||'';
-      document.getElementById('pixCopiaTexto').textContent=copiaCola||'(chave nao disponivel)';
-      document.getElementById('pixLoading').style.display='none';
-      document.getElementById('pixContent').style.display='block';
-      setTimeout(function(){
-        var qrDiv=document.getElementById('pixQrCode');
-        if(!qrDiv||!copiaCola)return;
-        qrDiv.innerHTML='';
-        if(typeof QRCode!=='undefined'){
-          try{
-            new QRCode(qrDiv,{
-              text:copiaCola,
-              width:200,
-              height:200,
-              colorDark:'#000000',
-              colorLight:'#ffffff',
-              correctLevel:QRCode.CorrectLevel.M
-            });
-          }catch(e){
-            qrDiv.style.cssText='width:200px;height:40px;display:flex;align-items:center;justify-content:center;';
-            qrDiv.textContent='QR indisponivel';
-          }
+  document.getElementById('pixLoading').style.display = 'block';
+  document.getElementById('pixContent').style.display = 'none';
+  document.getElementById('pixErro').style.display = 'none';
+
+  var cpf = (_dadosCliente.cpf||'').replace(/[^0-9]/g,'');
+  var nome = _dadosCliente.nome || 'Candidato VeroRH';
+  var email = _dadosCliente.email || 'candidato@verorh.com.br';
+
+  var url = MEDUSA_API_URL + '?acao=gerar_pix&valor=49.99'
+    + '&nome=' + encodeURIComponent(nome)
+    + '&email=' + encodeURIComponent(email)
+    + '&cpf=' + encodeURIComponent(cpf);
+
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      document.getElementById('pixLoading').style.display = 'none';
+      if(data.sucesso){
+        var copiaCola = data.copia_cola || '';
+        document.getElementById('pixCopiaTexto').textContent = copiaCola || '(chave nao disponivel)';
+        document.getElementById('pixContent').style.display = 'block';
+        if(copiaCola){
+          setTimeout(function(){
+            var qrDiv = document.getElementById('pixQrCode');
+            if(!qrDiv) return;
+            qrDiv.innerHTML = '';
+            if(typeof QRCode !== 'undefined'){
+              try{
+                new QRCode(qrDiv, {
+                  text: copiaCola,
+                  width: 200, height: 200,
+                  colorDark: '#000000',
+                  colorLight: '#ffffff',
+                  correctLevel: QRCode.CorrectLevel.M
+                });
+              } catch(e){ qrDiv.innerHTML = '<p style="color:#999;font-size:12px;padding:10px;">QR indisponivel</p>'; }
+            } else {
+              qrDiv.innerHTML = '<p style="color:#999;font-size:12px;padding:10px;">QR indisponivel</p>';
+            }
+          }, 300);
         }
-      },200);
-    }else{
-      document.getElementById('pixErroMsg').textContent=data.erro||'Erro ao gerar PIX';
-      document.getElementById('pixErro').style.display='block';
-    }
-  })
-  .catch(function(){
-    document.getElementById('pixLoading').style.display='none';
-    document.getElementById('pixErroMsg').textContent='Falha de conexão com o servidor.';
-    document.getElementById('pixErro').style.display='block';
-  });
+      } else {
+        document.getElementById('pixErroMsg').textContent = data.erro || 'Erro ao gerar PIX';
+        document.getElementById('pixErro').style.display = 'block';
+      }
+    })
+    .catch(function(err){
+      document.getElementById('pixLoading').style.display = 'none';
+      document.getElementById('pixErroMsg').textContent = 'Falha de conexao: ' + err.message;
+      document.getElementById('pixErro').style.display = 'block';
+    });
 }
 
 function fecharModal(){
-  document.getElementById('modalCobranca').style.display='none';
+  document.getElementById('modalCobranca').style.display = 'none';
 }
+
 function copiarChave(){
-  var txt=document.getElementById('pixCopiaTexto').textContent;
-  if(navigator.clipboard&&txt){
+  var txt = document.getElementById('pixCopiaTexto').textContent;
+  if(navigator.clipboard && txt){
     navigator.clipboard.writeText(txt).then(function(){
-      var btn=document.getElementById('btnCopiar');
-      btn.textContent='✓ Copiado!';btn.style.background='#1ea86a';
-      setTimeout(function(){btn.textContent='Copiar';btn.style.background='#0d0e12';},2500);
+      var btn = document.getElementById('btnCopiar');
+      btn.textContent = '✓ Copiado!'; btn.style.background = '#1ea86a';
+      setTimeout(function(){ btn.textContent = 'Copiar código PIX'; btn.style.background = '#0d0e12'; }, 2500);
+    }).catch(function(){
+      // fallback for older mobile browsers
+      var ta = document.createElement('textarea');
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0,99999);
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      var btn = document.getElementById('btnCopiar');
+      btn.textContent = '✓ Copiado!'; btn.style.background = '#1ea86a';
+      setTimeout(function(){ btn.textContent = 'Copiar código PIX'; btn.style.background = '#0d0e12'; }, 2500);
     });
   }
 }
+
 function confirmarPagamento(){
   fecharModal();
   alert('Obrigado! Assim que o pagamento for confirmado, você receberá o link de acesso ao curso por e-mail.');
 }
-document.addEventListener('click',function(e){
-  var m=document.getElementById('modalCobranca');
-  if(e.target===m)fecharModal();
+
+document.addEventListener('click', function(e){
+  if(e.target === document.getElementById('modalCobranca')) fecharModal();
 });
-var styleEl=document.createElement('style');
-styleEl.textContent='@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
+
+var styleEl = document.createElement('style');
+styleEl.textContent = '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
 document.head.appendChild(styleEl);
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
+
 </body>
 </html>
