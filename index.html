@@ -631,7 +631,6 @@ function mostrarModal(){
   var m=document.getElementById('modalCobranca');
   m.style.display='block';
   m.scrollTop=0;
-  document.body.style.overflow='hidden';
   gerarPix();
 }
 
@@ -687,9 +686,7 @@ function gerarPix(){
 }
 
 function fecharModal(){
-  var m=document.getElementById('modalCobranca');
-  m.style.display='none';
-  document.body.style.overflow='';
+  document.getElementById('modalCobranca').style.display='none';
 }
 function copiarChave(){
   var txt=document.getElementById('pixCopiaTexto').textContent;
