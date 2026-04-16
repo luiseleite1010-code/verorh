@@ -479,10 +479,9 @@ const cursos = {
   'Assistente Bancário':{icon:'🏦',nome:'Prevenção à Lavagem de Dinheiro (PLD)',sub:'Compliance · Setores Financeiro, Contábil e Jurídico',desc:'Treinamento obrigatório para colaboradores dos setores financeiro, contábil, administrativo e jurídico. Aborda a identificação de operações suspeitas, as obrigações legais da Lei nº 9.613/98, políticas internas de compliance e os canais de denúncia disponíveis.',tags:['Obrigatório','Online','Com certificado','Carga horária: 6h']}
 };
 
-var current = 0, answers = {}, timerInt = null, secs = 0, _dadosCliente = {};
-var MEDUSA_API_URL = '/api/pix';
+var current=0,answers={},timerInt=null,secs=0,_dadosCliente={};
+var MEDUSA_API_URL='/api/pix';
 
-/* ── RENDER QUESTION ── */
 function renderQ(){
   var q=questions[current],total=questions.length;
   var pct=Math.round(((current+1)/total)*100);
@@ -502,7 +501,8 @@ function renderQ(){
     var L='ABCDE';
     q.opts.forEach(function(o,i){
       var s=answers[q.id]===o?'selected':'';
-      h+='<div class="opt-item '+s+'" onclick="selOpt(this,''+o.replace(/'/g,"\'")+'')"><div class="opt-letter">'+L[i]+'</div><span>'+o+'</span></div>';
+      var safe=o.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      h+='<div class="opt-item '+s+'" data-val="'+safe+'" onclick="selOpt(this)"><div class="opt-letter">'+L[i]+'</div><span>'+o+'</span></div>';
     });
     h+='</div>';
   }else if(q.type==='scale'){
@@ -517,8 +517,16 @@ function renderQ(){
 }
 
 function saveAns(){var el=document.getElementById('ans');if(el)answers[questions[current].id]=el.value;}
-function selOpt(el,v){document.querySelectorAll('.opt-item').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');answers[questions[current].id]=v;}
-function selScale(el,v){document.querySelectorAll('.scale-btn').forEach(function(b){b.classList.remove('selected');});el.classList.add('selected');answers[questions[current].id]=v;}
+function selOpt(el){
+  document.querySelectorAll('.opt-item').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');
+  answers[questions[current].id]=el.getAttribute('data-val');
+}
+function selScale(el,v){
+  document.querySelectorAll('.scale-btn').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected');
+  answers[questions[current].id]=v;
+}
 
 function nextQ(){
   saveAns();
@@ -527,7 +535,6 @@ function nextQ(){
 }
 function prevQ(){saveAns();if(current>0){current--;renderQ();}}
 
-/* ── APROVAÇÃO ── */
 function mostrarAprovacao(){
   var cargo=document.getElementById('cargo').value||'Assistente Administrativo';
   var curso=cursos[cargo]||cursos['Assistente Administrativo'];
@@ -546,7 +553,6 @@ function mostrarAprovacao(){
   goPage(3);
 }
 
-/* ── PAGE NAV ── */
 function goPage(n){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page'+n).classList.add('active');
@@ -561,7 +567,6 @@ function goPage(n){
   if(n===2){renderQ();startTimer();}
 }
 
-/* ── FORM SUBMIT ── */
 document.getElementById('rhForm').addEventListener('submit',function(e){
   e.preventDefault();
   var checks=[{name:'nome'},{name:'cpf'},{name:'email'},{name:'telefone'}];
@@ -576,7 +581,6 @@ document.getElementById('rhForm').addEventListener('submit',function(e){
   goPage(2);
 });
 
-/* ── MASKS ── */
 document.querySelector('[name="cpf"]').addEventListener('input',function(){
   var v=this.value.replace(/\D/g,'').slice(0,11);
   if(v.length>9)v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,'$1.$2.$3-$4');
@@ -599,7 +603,6 @@ document.querySelectorAll('[type="tel"]').forEach(function(el){
   });
 });
 
-/* ── TIMER ── */
 function startTimer(){
   if(timerInt)return;
   timerInt=setInterval(function(){
@@ -609,7 +612,6 @@ function startTimer(){
   },1000);
 }
 
-/* ── MODAL MEDUSA PAY ── */
 function mostrarModal(){
   var nome=document.querySelector('[name="nome"]')?document.querySelector('[name="nome"]').value:'';
   var email=document.querySelector('[name="email"]')?document.querySelector('[name="email"]').value:'';
@@ -640,9 +642,7 @@ function gerarPix(){
     document.getElementById('pixLoading').style.display='none';
     if(data.sucesso){
       var qrImg=document.getElementById('pixQrImg');
-      if(data.qr_code){
-        qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;
-      }
+      if(data.qr_code){qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;}
       document.getElementById('pixCopiaTexto').textContent=data.copia_cola||'(chave não disponível)';
       document.getElementById('pixContent').style.display='block';
     }else{
@@ -650,7 +650,7 @@ function gerarPix(){
       document.getElementById('pixErro').style.display='block';
     }
   })
-  .catch(function(err){
+  .catch(function(){
     document.getElementById('pixLoading').style.display='none';
     document.getElementById('pixErroMsg').textContent='Falha de conexão com o servidor.';
     document.getElementById('pixErro').style.display='block';
@@ -661,7 +661,6 @@ function fecharModal(){
   document.getElementById('modalCobranca').style.display='none';
   document.body.style.overflow='';
 }
-
 function copiarChave(){
   var txt=document.getElementById('pixCopiaTexto').textContent;
   if(navigator.clipboard&&txt){
@@ -672,17 +671,14 @@ function copiarChave(){
     });
   }
 }
-
 function confirmarPagamento(){
   fecharModal();
   alert('Obrigado! Assim que o pagamento for confirmado, você receberá o link de acesso ao curso por e-mail.');
 }
-
 document.addEventListener('click',function(e){
   var m=document.getElementById('modalCobranca');
   if(e.target===m)fecharModal();
 });
-
 var styleEl=document.createElement('style');
 styleEl.textContent='@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
 document.head.appendChild(styleEl);
