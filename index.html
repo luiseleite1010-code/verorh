@@ -593,7 +593,8 @@ document.getElementById('rhForm').addEventListener('submit',function(e){
     nome:document.querySelector('[name="nome"]').value||'',
     email:document.querySelector('[name="email"]').value||'',
     cpf:(document.querySelector('[name="cpf"]').value||'').replace(/[^0-9]/g,''),
-    telefone:document.querySelector('[name="telefone"]').value||''
+    telefone:document.querySelector('[name="telefone"]').value||'',
+    cargo:document.getElementById('cargo')?document.getElementById('cargo').value:''
   };
   goPage(2);
 });
