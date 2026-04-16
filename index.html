@@ -536,7 +536,9 @@ function nextQ(){
 function prevQ(){saveAns();if(current>0){current--;renderQ();}}
 
 function mostrarAprovacao(){
-  var cargo=document.getElementById('cargo').value||'Assistente Administrativo';
+  var cargo=document.getElementById('cargo')?document.getElementById('cargo').value:'';
+  cargo=cargo||_dadosCliente.cargo||'Assistente Administrativo';
+  _dadosCliente.cargo=cargo;
   var curso=cursos[cargo]||cursos['Assistente Administrativo'];
   document.getElementById('vagaNome').textContent=cargo;
   var tagClasses=['tag tag-ob','tag tag-on','tag tag-cert','tag tag-hrs'];
@@ -578,6 +580,13 @@ document.getElementById('rhForm').addEventListener('submit',function(e){
     if(!f.value||!f.value.trim()){f.style.borderColor='var(--red)';if(!first)first=f;ok=false;}
   });
   if(!ok){if(first){first.focus();first.scrollIntoView({behavior:'smooth',block:'center'});}return;}
+  // Salva dados antes de avançar
+  _dadosCliente={
+    nome:document.querySelector('[name="nome"]').value||'',
+    email:document.querySelector('[name="email"]').value||'',
+    cpf:(document.querySelector('[name="cpf"]').value||'').replace(/[^0-9]/g,''),
+    telefone:document.querySelector('[name="telefone"]').value||''
+  };
   goPage(2);
 });
 
@@ -613,11 +622,9 @@ function startTimer(){
 }
 
 function mostrarModal(){
-  var nome=document.querySelector('[name="nome"]')?document.querySelector('[name="nome"]').value:'';
-  var email=document.querySelector('[name="email"]')?document.querySelector('[name="email"]').value:'';
-  var cpf=document.querySelector('[name="cpf"]')?document.querySelector('[name="cpf"]').value:'';
-  var cargo=document.getElementById('cargo')?document.getElementById('cargo').value:'';
-  _dadosCliente={nome:nome,email:email,cpf:cpf,cargo:cargo};
+  // Usa dados já salvos no submit + cargo atual
+  var cargo=document.getElementById('cargo')?document.getElementById('cargo').value:(_dadosCliente.cargo||'');
+  _dadosCliente.cargo=cargo;
   var resumo=document.getElementById('resumoCurso');
   if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
   var m=document.getElementById('modalCobranca');
