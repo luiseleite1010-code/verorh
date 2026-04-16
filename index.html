@@ -460,7 +460,6 @@ footer strong{color:var(--paper)}
 </footer>
 
 <script>
-/* ── QUESTIONS ── */
 const questions = [
   {id:1,type:'textarea',text:'Fale um pouco sobre você. Quem é você profissionalmente?',hint:'Apresente sua trajetória, experiências e o que te motivou a buscar essa oportunidade.',ph:'Escreva sua resposta aqui…'},
   {id:2,type:'choice',text:'Qual é a sua disponibilidade de horário para trabalhar?',opts:['Manhã (06h–14h)','Tarde (14h–22h)','Noite (22h–06h)','Horário comercial (08h–18h)','Total flexibilidade']},
@@ -474,76 +473,52 @@ const questions = [
   {id:10,type:'textarea',text:'Há algo mais que gostaria de acrescentar ao seu currículo ou que considera importante para nossa avaliação?',hint:'Idiomas, cursos extras, conquistas, disponibilidade para viagens ou mudanças…',ph:'Informações adicionais…'}
 ];
 
-/* ── CURSOS ── */
 const cursos = {
-  'Motorista':{
-    icon:'🚧',
-    nome:'NR 01 — Integração de Segurança',
-    sub:'Norma Regulamentadora 01 · Segurança do Trabalho',
-    desc:'Treinamento introdutório obrigatório para todos os novos funcionários operacionais. Aborda normas de segurança, prevenção de acidentes no trabalho, uso correto de EPIs, procedimentos de emergência e as responsabilidades do trabalhador conforme legislação vigente.',
-    tags:['Obrigatório','Online','Com certificado','Carga horária: 8h']
-  },
-  'Assistente Administrativo':{
-    icon:'🏦',
-    nome:'Prevenção à Lavagem de Dinheiro (PLD)',
-    sub:'Compliance · Setores Financeiro, Contábil e Jurídico',
-    desc:'Treinamento obrigatório para colaboradores dos setores financeiro, contábil, administrativo e jurídico. Aborda a identificação de operações suspeitas, as obrigações legais da Lei nº 9.613/98, políticas internas de compliance e os canais de denúncia disponíveis.',
-    tags:['Obrigatório','Online','Com certificado','Carga horária: 6h']
-  },
-  'Assistente Bancário':{
-    icon:'🏦',
-    nome:'Prevenção à Lavagem de Dinheiro (PLD)',
-    sub:'Compliance · Setores Financeiro, Contábil e Jurídico',
-    desc:'Treinamento obrigatório para colaboradores dos setores financeiro, contábil, administrativo e jurídico. Aborda a identificação de operações suspeitas, as obrigações legais da Lei nº 9.613/98, políticas internas de compliance e os canais de denúncia disponíveis.',
-    tags:['Obrigatório','Online','Com certificado','Carga horária: 6h']
-  }
+  'Motorista':{icon:'🚧',nome:'NR 01 — Integração de Segurança',sub:'Norma Regulamentadora 01 · Segurança do Trabalho',desc:'Treinamento introdutório obrigatório para todos os novos funcionários operacionais. Aborda normas de segurança, prevenção de acidentes no trabalho, uso correto de EPIs, procedimentos de emergência e as responsabilidades do trabalhador conforme legislação vigente.',tags:['Obrigatório','Online','Com certificado','Carga horária: 8h']},
+  'Assistente Administrativo':{icon:'🏦',nome:'Prevenção à Lavagem de Dinheiro (PLD)',sub:'Compliance · Setores Financeiro, Contábil e Jurídico',desc:'Treinamento obrigatório para colaboradores dos setores financeiro, contábil, administrativo e jurídico. Aborda a identificação de operações suspeitas, as obrigações legais da Lei nº 9.613/98, políticas internas de compliance e os canais de denúncia disponíveis.',tags:['Obrigatório','Online','Com certificado','Carga horária: 6h']},
+  'Assistente Bancário':{icon:'🏦',nome:'Prevenção à Lavagem de Dinheiro (PLD)',sub:'Compliance · Setores Financeiro, Contábil e Jurídico',desc:'Treinamento obrigatório para colaboradores dos setores financeiro, contábil, administrativo e jurídico. Aborda a identificação de operações suspeitas, as obrigações legais da Lei nº 9.613/98, políticas internas de compliance e os canais de denúncia disponíveis.',tags:['Obrigatório','Online','Com certificado','Carga horária: 6h']}
 };
 
-/* ── STATE ── */
-let current = 0;
-const answers = {};
-let timerInt = null, secs = 0;
+var current = 0, answers = {}, timerInt = null, secs = 0, _dadosCliente = {};
+var MEDUSA_API_URL = '/api/pix';
 
 /* ── RENDER QUESTION ── */
-function renderQ() {
-  const q = questions[current], total = questions.length;
-  const pct = Math.round(((current+1)/total)*100);
-  document.getElementById('progLabel').textContent = 'Pergunta '+(current+1)+' de '+total;
-  document.getElementById('progPct').textContent = pct+'%';
-  document.getElementById('progFill').style.width = pct+'%';
-  document.getElementById('btnPrev').style.visibility = current===0?'hidden':'visible';
-  document.getElementById('btnNext').textContent = current===total-1?'Finalizar e Ver Resultado →':'Próxima →';
-
-  let h = '<div class="q-number">Pergunta '+(current+1)+'</div>';
-  h += '<div class="q-text">'+q.text+'</div>';
-  if(q.hint) h += '<div class="q-hint">'+q.hint+'</div>';
-
+function renderQ(){
+  var q=questions[current],total=questions.length;
+  var pct=Math.round(((current+1)/total)*100);
+  document.getElementById('progLabel').textContent='Pergunta '+(current+1)+' de '+total;
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('btnPrev').style.visibility=current===0?'hidden':'visible';
+  document.getElementById('btnNext').textContent=current===total-1?'Finalizar e Ver Resultado →':'Próxima →';
+  var h='<div class="q-number">Pergunta '+(current+1)+'</div>';
+  h+='<div class="q-text">'+q.text+'</div>';
+  if(q.hint)h+='<div class="q-hint">'+q.hint+'</div>';
   if(q.type==='textarea'){
-    const sv = answers[q.id]||'';
-    h += '<textarea class="q-textarea" id="ans" placeholder="'+(q.ph||'')+'" oninput="saveAns()">'+sv+'</textarea>';
-  } else if(q.type==='choice'){
-    h += '<div class="options-grid">';
-    const L = 'ABCDE';
+    var sv=answers[q.id]||'';
+    h+='<textarea class="q-textarea" id="ans" placeholder="'+(q.ph||'')+'" oninput="saveAns()">'+sv+'</textarea>';
+  }else if(q.type==='choice'){
+    h+='<div class="options-grid">';
+    var L='ABCDE';
     q.opts.forEach(function(o,i){
-      const s = answers[q.id]===o?'selected':'';
-      h += '<div class="opt-item '+s+'" onclick="selOpt(this,\''+o.replace(/'/g,"\\'")+'\')"><div class="opt-letter">'+L[i]+'</div><span>'+o+'</span></div>';
+      var s=answers[q.id]===o?'selected':'';
+      h+='<div class="opt-item '+s+'" onclick="selOpt(this,''+o.replace(/'/g,"\'")+'')"><div class="opt-letter">'+L[i]+'</div><span>'+o+'</span></div>';
     });
-    h += '</div>';
-  } else if(q.type==='scale'){
-    h += '<div class="scale-row">';
-    for(let n=1;n<=10;n++){const s=answers[q.id]==n?'selected':'';h+='<button type="button" class="scale-btn '+s+'" onclick="selScale(this,'+n+')">'+n+'</button>';}
-    h += '</div><div class="scale-labels"><span>'+q.min+'</span><span>'+q.max+'</span></div>';
+    h+='</div>';
+  }else if(q.type==='scale'){
+    h+='<div class="scale-row">';
+    for(var n=1;n<=10;n++){var s=answers[q.id]==n?'selected':'';h+='<button type="button" class="scale-btn '+s+'" onclick="selScale(this,'+n+')">'+n+'</button>';}
+    h+='</div><div class="scale-labels"><span>'+q.min+'</span><span>'+q.max+'</span></div>';
   }
-
-  const card = document.getElementById('qCard');
-  card.style.opacity='0'; card.style.transform='translateX(16px)';
-  card.innerHTML = h;
+  var card=document.getElementById('qCard');
+  card.style.opacity='0';card.style.transform='translateX(16px)';
+  card.innerHTML=h;
   setTimeout(function(){card.style.opacity='1';card.style.transform='translateX(0)';},20);
 }
 
-function saveAns(){const el=document.getElementById('ans');if(el)answers[questions[current].id]=el.value;}
-function selOpt(el,v){document.querySelectorAll('.opt-item').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');answers[questions[current].id]=v;}
-function selScale(el,v){document.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');answers[questions[current].id]=v;}
+function saveAns(){var el=document.getElementById('ans');if(el)answers[questions[current].id]=el.value;}
+function selOpt(el,v){document.querySelectorAll('.opt-item').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');answers[questions[current].id]=v;}
+function selScale(el,v){document.querySelectorAll('.scale-btn').forEach(function(b){b.classList.remove('selected');});el.classList.add('selected');answers[questions[current].id]=v;}
 
 function nextQ(){
   saveAns();
@@ -554,41 +529,33 @@ function prevQ(){saveAns();if(current>0){current--;renderQ();}}
 
 /* ── APROVAÇÃO ── */
 function mostrarAprovacao(){
-  const cargo = document.getElementById('cargo').value || 'Assistente Administrativo';
-  const curso = cursos[cargo] || cursos['Assistente Administrativo'];
-
-  document.getElementById('vagaNome').textContent = cargo;
-
-  const tagClasses = ['tag tag-ob','tag tag-on','tag tag-cert','tag tag-hrs'];
-  const tagsHtml = curso.tags.map((t,i)=>'<span class="'+(tagClasses[i]||'tag tag-hrs')+'">'+t+'</span>').join('');
-
-  document.getElementById('cursoBox').innerHTML =
+  var cargo=document.getElementById('cargo').value||'Assistente Administrativo';
+  var curso=cursos[cargo]||cursos['Assistente Administrativo'];
+  document.getElementById('vagaNome').textContent=cargo;
+  var tagClasses=['tag tag-ob','tag tag-on','tag tag-cert','tag tag-hrs'];
+  var tagsHtml=curso.tags.map(function(t,i){return '<span class="'+(tagClasses[i]||'tag tag-hrs')+'">'+t+'</span>';}).join('');
+  document.getElementById('cursoBox').innerHTML=
     '<div class="curso-card">'+
       '<div class="curso-header">'+
         '<div class="curso-icon-box">'+curso.icon+'</div>'+
-        '<div>'+
-          '<div class="curso-title">'+curso.nome+'</div>'+
-          '<div class="curso-subtitle">'+curso.sub+'</div>'+
-        '</div>'+
+        '<div><div class="curso-title">'+curso.nome+'</div><div class="curso-subtitle">'+curso.sub+'</div></div>'+
       '</div>'+
       '<div class="curso-desc">'+curso.desc+'</div>'+
       '<div class="curso-tags">'+tagsHtml+'</div>'+
     '</div>';
-
   goPage(3);
 }
 
 /* ── PAGE NAV ── */
 function goPage(n){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page'+n).classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-
-  const s1=document.getElementById('step1Ind');
-  const s2=document.getElementById('step2Ind');
-  const s3=document.getElementById('step3Ind');
-  s1.className='step-item'; s2.className='step-item'; s3.className='step-item';
-  if(n===1) s1.classList.add('active');
+  var s1=document.getElementById('step1Ind');
+  var s2=document.getElementById('step2Ind');
+  var s3=document.getElementById('step3Ind');
+  s1.className='step-item';s2.className='step-item';s3.className='step-item';
+  if(n===1)s1.classList.add('active');
   if(n===2){s1.classList.add('done');s2.classList.add('active');}
   if(n===3){s1.classList.add('done');s2.classList.add('done');s3.classList.add('done');}
   if(n===2){renderQ();startTimer();}
@@ -597,47 +564,34 @@ function goPage(n){
 /* ── FORM SUBMIT ── */
 document.getElementById('rhForm').addEventListener('submit',function(e){
   e.preventDefault();
-  var checks = [
-    {name:'nome', label:'Nome Completo'},
-    {name:'cpf',  label:'CPF'},
-    {name:'email', label:'E-mail'},
-    {name:'telefone', label:'Telefone'}
-  ];
-  var ok = true;
-  var first = null;
+  var checks=[{name:'nome'},{name:'cpf'},{name:'email'},{name:'telefone'}];
+  var ok=true,first=null;
   checks.forEach(function(c){
-    var f = document.querySelector('[name="'+c.name+'"]');
-    if(!f) return;
-    f.style.borderColor = '';
-    if(!f.value || !f.value.trim()){
-      f.style.borderColor = 'var(--red)';
-      if(!first) first = f;
-      ok = false;
-    }
+    var f=document.querySelector('[name="'+c.name+'"]');
+    if(!f)return;
+    f.style.borderColor='';
+    if(!f.value||!f.value.trim()){f.style.borderColor='var(--red)';if(!first)first=f;ok=false;}
   });
-  if(!ok){
-    if(first){ first.focus(); first.scrollIntoView({behavior:'smooth', block:'center'}); }
-    return;
-  }
+  if(!ok){if(first){first.focus();first.scrollIntoView({behavior:'smooth',block:'center'});}return;}
   goPage(2);
 });
 
 /* ── MASKS ── */
 document.querySelector('[name="cpf"]').addEventListener('input',function(){
-  let v=this.value.replace(/\D/g,'').slice(0,11);
+  var v=this.value.replace(/\D/g,'').slice(0,11);
   if(v.length>9)v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,'$1.$2.$3-$4');
   else if(v.length>6)v=v.replace(/(\d{3})(\d{3})(\d{1,3})/,'$1.$2.$3');
   else if(v.length>3)v=v.replace(/(\d{3})(\d{1,3})/,'$1.$2');
   this.value=v;
 });
 document.querySelector('[name="cep"]').addEventListener('input',function(){
-  let v=this.value.replace(/\D/g,'').slice(0,8);
+  var v=this.value.replace(/\D/g,'').slice(0,8);
   if(v.length>5)v=v.replace(/(\d{5})(\d{1,3})/,'$1-$2');
   this.value=v;
 });
-document.querySelectorAll('[type="tel"]').forEach(el=>{
+document.querySelectorAll('[type="tel"]').forEach(function(el){
   el.addEventListener('input',function(){
-    let v=this.value.replace(/\D/g,'').slice(0,11);
+    var v=this.value.replace(/\D/g,'').slice(0,11);
     if(v.length>10)v=v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');
     else if(v.length>6)v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
     else if(v.length>2)v=v.replace(/(\d{2})(\d+)/,'($1) $2');
@@ -650,153 +604,87 @@ function startTimer(){
   if(timerInt)return;
   timerInt=setInterval(function(){
     secs++;
-    const m=String(Math.floor(secs/60)).padStart(2,'0');
-    const s=String(secs%60).padStart(2,'0');
-    const el=document.getElementById('camTime');
-    if(el)el.textContent=m+':'+s;
+    var m=String(Math.floor(secs/60)).padStart(2,'0'),s=String(secs%60).padStart(2,'0');
+    var el=document.getElementById('camTime');if(el)el.textContent=m+':'+s;
   },1000);
 }
 
+/* ── MODAL MEDUSA PAY ── */
 function mostrarModal(){
-  const m = document.getElementById('modalCobranca');
-  m.style.display = 'flex';
-}
-function fecharModal(){
-  const m = document.getElementById('modalCobranca');
-  m.style.display = 'none';
-}
-function confirmarPagamento(){
-  fecharModal();
-  alert('Redirecionando para o ambiente seguro de pagamento...');
-}
-// Close modal on backdrop click
-document.addEventListener('click', function(e){
-  const m = document.getElementById('modalCobranca');
-  if(e.target === m) fecharModal();
-});
-
-/* ── MEDUSA PAY INTEGRATION ── */
-// URL do seu backend PHP
-var MEDUSA_API_URL = 'api_pix_final.php';
-
-var _dadosCliente = {};
-
-function mostrarModal() {
-  // Captura dados do formulário para enviar à API
-  var nome = document.querySelector('[name="nome"]') ? document.querySelector('[name="nome"]').value : '';
-  var email = document.querySelector('[name="email"]') ? document.querySelector('[name="email"]').value : '';
-  var cpf = document.querySelector('[name="cpf"]') ? document.querySelector('[name="cpf"]').value : '';
-  var cargo = document.getElementById('cargo') ? document.getElementById('cargo').value : '';
-  _dadosCliente = { nome: nome, email: email, cpf: cpf, cargo: cargo };
-
-  // Define nome do curso no resumo
-  var resumo = document.getElementById('resumoCurso');
-  if (resumo) {
-    resumo.textContent = cargo === 'Motorista'
-      ? 'NR 01 — Integração de Segurança'
-      : 'Prevenção à Lavagem de Dinheiro (PLD)';
-  }
-
-  // Abre modal e dispara geração do PIX
-  var m = document.getElementById('modalCobranca');
-  m.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  switchTab('pix');
+  var nome=document.querySelector('[name="nome"]')?document.querySelector('[name="nome"]').value:'';
+  var email=document.querySelector('[name="email"]')?document.querySelector('[name="email"]').value:'';
+  var cpf=document.querySelector('[name="cpf"]')?document.querySelector('[name="cpf"]').value:'';
+  var cargo=document.getElementById('cargo')?document.getElementById('cargo').value:'';
+  _dadosCliente={nome:nome,email:email,cpf:cpf,cargo:cargo};
+  var resumo=document.getElementById('resumoCurso');
+  if(resumo)resumo.textContent=cargo==='Motorista'?'NR 01 — Integração de Segurança':'Prevenção à Lavagem de Dinheiro (PLD)';
+  var m=document.getElementById('modalCobranca');
+  m.style.display='flex';
+  document.body.style.overflow='hidden';
   gerarPix();
 }
 
-function gerarPix() {
-  // Mostra loading, esconde outros estados
-  document.getElementById('pixLoading').style.display = 'block';
-  document.getElementById('pixContent').style.display = 'none';
-  document.getElementById('pixErro').style.display = 'none';
-
-  var params = new URLSearchParams({
-    acao: 'gerar_pix',
-    valor: '49.99',
-    nome: _dadosCliente.nome || 'Candidato VeroRH',
-    email: _dadosCliente.email || 'candidato@verorh.com.br',
-    cpf: (_dadosCliente.cpf || '').replace(/[^0-9]/g, '')
+function gerarPix(){
+  document.getElementById('pixLoading').style.display='block';
+  document.getElementById('pixContent').style.display='none';
+  document.getElementById('pixErro').style.display='none';
+  var params=new URLSearchParams({
+    acao:'gerar_pix',valor:'49.99',
+    nome:_dadosCliente.nome||'Candidato VeroRH',
+    email:_dadosCliente.email||'candidato@verorh.com.br',
+    cpf:(_dadosCliente.cpf||'').replace(/[^0-9]/g,'')
   });
-
-  fetch(MEDUSA_API_URL + '?' + params.toString(), {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    document.getElementById('pixLoading').style.display = 'none';
-    if (data.sucesso) {
-      // QR Code image (base64 da API)
-      var qrImg = document.getElementById('pixQrImg');
-      if (data.qr_code) {
-        // qr_code pode ser base64 ou URL
-        if (data.qr_code.startsWith('http')) {
-          qrImg.src = data.qr_code;
-        } else {
-          qrImg.src = 'data:image/png;base64,' + data.qr_code;
-        }
+  fetch(MEDUSA_API_URL+'?'+params.toString())
+  .then(function(r){return r.json();})
+  .then(function(data){
+    document.getElementById('pixLoading').style.display='none';
+    if(data.sucesso){
+      var qrImg=document.getElementById('pixQrImg');
+      if(data.qr_code){
+        qrImg.src=data.qr_code.startsWith('http')?data.qr_code:'data:image/png;base64,'+data.qr_code;
       }
-      // Copia e cola
-      var copiaCola = data.copia_cola || '';
-      document.getElementById('pixCopiaTexto').textContent = copiaCola || '(chave não disponível)';
-      document.getElementById('pixContent').style.display = 'block';
-    } else {
-      document.getElementById('pixErroMsg').textContent = data.erro || 'Erro ao gerar PIX';
-      document.getElementById('pixErro').style.display = 'block';
+      document.getElementById('pixCopiaTexto').textContent=data.copia_cola||'(chave não disponível)';
+      document.getElementById('pixContent').style.display='block';
+    }else{
+      document.getElementById('pixErroMsg').textContent=data.erro||'Erro ao gerar PIX';
+      document.getElementById('pixErro').style.display='block';
     }
   })
-  .catch(function(err) {
-    document.getElementById('pixLoading').style.display = 'none';
-    document.getElementById('pixErroMsg').textContent = 'Falha de conexão com o servidor. Tente novamente.';
-    document.getElementById('pixErro').style.display = 'block';
-    console.error('Medusa Pay error:', err);
+  .catch(function(err){
+    document.getElementById('pixLoading').style.display='none';
+    document.getElementById('pixErroMsg').textContent='Falha de conexão com o servidor.';
+    document.getElementById('pixErro').style.display='block';
   });
 }
 
-function fecharModal() {
-  var m = document.getElementById('modalCobranca');
-  m.style.display = 'none';
-  document.body.style.overflow = '';
+function fecharModal(){
+  document.getElementById('modalCobranca').style.display='none';
+  document.body.style.overflow='';
 }
 
-function switchTab(tab){ /* PIX only */ } else {
-    pix.style.display = 'none'; card.style.display = 'block';
-    tCard.style.cssText += ';border-bottom:3px solid #c8382e;color:#c8382e;background:#fff';
-    tPix.style.cssText += ';border-bottom:3px solid transparent;color:#6b6860;background:#f4f1eb';
-  }
-}
-
-function copiarChave() {
-  var txt = document.getElementById('pixCopiaTexto').textContent;
-  if (navigator.clipboard && txt) {
-    navigator.clipboard.writeText(txt).then(function() {
-      var btn = document.getElementById('btnCopiar');
-      btn.textContent = '✓ Copiado!';
-      btn.style.background = '#1ea86a';
-      setTimeout(function() { btn.textContent = 'Copiar'; btn.style.background = '#0d0e12'; }, 2500);
+function copiarChave(){
+  var txt=document.getElementById('pixCopiaTexto').textContent;
+  if(navigator.clipboard&&txt){
+    navigator.clipboard.writeText(txt).then(function(){
+      var btn=document.getElementById('btnCopiar');
+      btn.textContent='✓ Copiado!';btn.style.background='#1ea86a';
+      setTimeout(function(){btn.textContent='Copiar';btn.style.background='#0d0e12';},2500);
     });
   }
 }
 
-function confirmarPagamento() {
+function confirmarPagamento(){
   fecharModal();
   alert('Obrigado! Assim que o pagamento for confirmado, você receberá o link de acesso ao curso por e-mail.');
 }
 
-)(?=\d)/g, '$1 ');
-  el.value = v;
-}
-
-
-document.addEventListener('click', function(e) {
-  var m = document.getElementById('modalCobranca');
-  if (e.target === m) fecharModal();
+document.addEventListener('click',function(e){
+  var m=document.getElementById('modalCobranca');
+  if(e.target===m)fecharModal();
 });
 
-/* spin animation */
-var styleEl = document.createElement('style');
-styleEl.textContent = '@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
+var styleEl=document.createElement('style');
+styleEl.textContent='@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';
 document.head.appendChild(styleEl);
 </script>
 </body>
